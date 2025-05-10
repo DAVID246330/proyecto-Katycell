@@ -1,0 +1,139 @@
+/* Títulos principales */
+.title-products {
+    font-size: 30px; /* Tamaño de fuente del título principal */
+    font-weight: bold; /* Peso de fuente para destacar el título */
+    color: #220d02; /* Color marrón oscuro para el título */
+    text-align: center; /* Centrado del texto */
+    margin-bottom: 15px; /* Espacio inferior para separar del contenido siguiente */
+}
+
+.welcome-phrase {
+    font-size: 20px; /* Tamaño de fuente para la frase adicional */
+    font-weight: normal; /* Peso de fuente normal para no competir con el título */
+    color: #180801; /* Asegura el mismo color marrón oscuro */
+}
+
+/* Subtítulos */
+.subtitle-products {
+    font-size: 28px; /* Tamaño de fuente del subtítulo */
+    color: #0e0704; /* Color marrón oscuro para el subtítulo */
+    text-align: center; /* Centrado del texto */
+    margin-bottom: 30px; /* Espacio inferior para separar del contenido siguiente */
+}
+
+/* Estilos del campo de búsqueda */
+.search-input {
+    float: left; /* Flota a la izquierda para alinearse con otros elementos */
+    padding: 10px; /* Espacio interno del campo de búsqueda */
+    width: 50%; /* Ancho del campo de búsqueda */
+    border: none; /* Sin borde visible */
+    border-bottom: 1px solid var(--color-gray); /* Línea inferior de color gris */
+    outline: 0; /* Sin borde de enfoque */
+}
+
+.search-input:focus {
+    box-shadow: none; /* Sin sombra al enfocar el campo de búsqueda */
+}
+
+/* Estilos del menú de selección */
+.select-order {
+    float: right; /* Flota a la derecha para alinearse con otros elementos */
+    padding: 10px; /* Espacio interno del menú de selección */
+    border: 0; /* Sin borde visible */
+    outline: 0; /* Sin borde de enfoque */
+    cursor: pointer; /* Cambia el cursor a mano al pasar sobre el elemento */
+}
+
+/* Estilos de los productos */
+.product-box {
+    text-align: center; /* Centrado del contenido del producto */
+    color: black; /* Color del texto en la caja del producto */
+    text-decoration: none; /* Sin subrayado en el texto */
+    padding: 30px;
+    margin-bottom: 40px;
+}
+
+.product-box:hover {
+    text-decoration: none; /* Sin subrayado en hover */
+}
+
+.product-box img {
+    transition: all 0.3s; /* Transición suave para cambios de imagen */
+}
+
+.product-box:hover img {
+    transform: scale(1.05); /* Aumenta el tamaño de la imagen al pasar el ratón */
+}
+
+/* Títulos de los productos */
+.product-box h3 {
+    font-size: 16px; /* Aumentar el tamaño de la fuente para el nombre del producto */
+    font-weight: bold; /* Hacer el texto en negrita */
+    margin: 10px; /* Espacio alrededor del nombre del producto */
+    overflow: hidden; /* Oculta el desbordamiento */
+    text-overflow: ellipsis; /* Muestra puntos suspensivos para el texto largo */
+    white-space: nowrap; /* Sin salto de línea */
+}
+
+/* Estilos de ofertas */
+.product-box .offer {
+    font-size: 16px; /* Aumentar el tamaño de la fuente para las ofertas */
+    color: red; /* Color rojo para las ofertas */
+    text-transform: uppercase; /* Transforma el texto a mayúsculas */
+    font-weight: bold; /* Peso de fuente negrita para destacar */
+}
+
+/* Estilos de precios */
+.product-box .price {
+    font-size: 22px; /* Aumentar el tamaño de la fuente para el precio */
+    font-weight: bold; /* Hacer el precio más destacado */
+    color: black; /* Color específico para el precio */
+}
+
+/* Precio tachado (descuento) */
+.product-box strong del {
+    font-size: 16px; /* Aumentar el tamaño del precio tachado */
+    font-weight: normal; /* Mantener el peso de la fuente normal */
+    margin-bottom: 10px; /* Espacio inferior para separar del siguiente elemento */
+    color: #999; /* Color gris para el precio tachado */
+}
+
+/* Botón de "Agregar al Carrito" */
+.product-box .add-to-cart-btn {
+    background-color: #df363f; /* Fondo verde */
+    color: white; /* Texto en blanco */
+    padding: 8px 12px; /* Espaciado interno */
+    border: none; /* Sin borde */
+    border-radius: 4px; /* Bordes redondeados */
+    font-size: 14px; /* Tamaño de fuente */
+    font-weight: bold; /* Negrita */
+    cursor: pointer; /* Cursor de mano */
+    margin-top: 10px; /* Separación superior */
+    transition: background-color 0.3s; /* Transición suave en hover */
+}
+
+.product-box .add-to-cart-btn:hover {
+    background-color: #218838; /* Fondo más oscuro en hover */
+}
+/* Paginación */
+.pagination {
+    text-align: center; /* Centrado del contenido de paginación */
+    list-style: none; /* Sin estilo de lista para elementos de paginación */
+    font-size: 18px; /* Tamaño de fuente para los elementos de paginación */
+}
+
+.pagination li {
+    display: inline-block; /* Muestra los elementos de paginación en línea */
+}
+
+.pagination li a {
+    color: black; /* Color del texto en los enlaces de paginación */
+    padding: 5px; /* Espacio interno para el enlace */
+    width: 30px; /* Ancho de los enlaces de paginación */
+    text-align: center; /* Centrado del texto en los enlaces */
+    display: inline-block; /* Muestra el enlace como un bloque en línea */
+}
+
+.pagination li a.active {
+    border: 1px solid black; /* Borde negro para el enlace activo */
+}

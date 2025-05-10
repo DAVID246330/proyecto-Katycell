@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="css/admin.css">
+    <script src="admin.js" defer></script>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <aside class="sidebar">
+            <h2>Katycell Admin</h2>
+            <nav>
+                <ul>
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#">Gestión de Productos</a></li>
+                    <li><a href="#">Gestión de Usuarios</a></li>
+                    <li><a href="#">Órdenes</a></li>
+                    <li><a href="#">Reportes</a></li>
+                </ul>
+            </nav>
+            <button class="logout-button">Cerrar sesión</button>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Bienvenido al área de administración</h1>
+            </header>
+            <section class="section">
+                <h2>Productos</h2>
+
+                <button class="btn-primary" onclick="abrirModal()">Agregar Producto</button>
+<!-- Modal oculto por defecto -->
+<div id="modalAgregarProducto" class="modal">
+    <div class="modal-contenido">
+      <h2>Agregar nuevo producto</h2>
+      <form action="/productos/agregar" method="POST">
+        <label>Nombre:</label>
+        <input type="text" name="Nombre" required>
+  
+        <label>Descripción:</label>
+        <input type="text" name="Descripcion" required>
+  
+        <label>Precio:</label>
+        <input type="number" name="Precio" required>
+  
+        <label>Descuento (%):</label>
+        <input type="number" name="Precio_Descuento" value="0">
+  
+        <label>Cantidad:</label>
+        <input type="number" name="Stock" required>
+  
+        <label>URL/Img:</label>
+        <input type="text" name="Imagen" required>
+  
+        <label for="productCategoria">Categoría:</label>
+        <select id="productCategoria" name="ID_Categoria" required>
+          <% categorias.forEach(categoria => { %>
+            <option value="<%= categoria.ID_Categoria %>"><%= categoria.Nombre_Categoria %></option>
+          <% }) %>
+        </select>
+  
+        <div class="modal-botones">
+          <button type="submit" class="btn-guardar">Guardar</button>
+          <button type="button" onclick="cerrarModal()" class="btn-cancelar">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+
+                <button class="regresar-home">
+                    <a class="link" href="/home">Volver a la tienda</a>
+                </button>
+
+                <section class="search-section">
+                    <form id="search-form" method="GET" action="/admin">
+                        <input 
+                            type="text" 
+                            id="search-input" 
+                            class="search-input" 
+                            name="buscar" 
+                            placeholder="Buscar productos..." 
+                            value="<%= buscar || '' %>"
+                            aria-label="Buscar productos"
+                        />
+                        <button type="submit" class="search-button">Buscar</button>
+                    </form>                    
+                </section>
+                
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre Producto</th>  
+                                <th>Descripcion</th>                         
+                                <th>Precio</th>
+                                <th>Descuento</th>
+                                <th>Stock</th>
+                                <th>IMG</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% productos.forEach(producto => { %>
+                                <tr>
+                                    <td><%= producto.ID_Producto %></td>
+                                    <td><%= producto.Nombre %></td>
+                                    <td class="descripcion" title="<%= producto.Descripcion %>"><%= producto.Descripcion %></td>                                 
+                                    <td>$<%= producto.Precio %></td>
+                                    <td><%= producto.Precio_Descuento %>%</td>
+                                    <td><%= producto.Stock %></td>
+                                    <td><img src="<%= producto.Imagen %>" alt="Imagen del producto" style="width: 60px; height: auto;"></td>
+                                    <td>
+                                        <div class="acciones">
+                                            <button class="edit-button">Editar</button>
+                                        
+                                            <form action="/productos/eliminar/<%= producto.ID_Producto %>" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este producto?')">
+                                                <button type="submit" class="delete-button">Eliminar</button>
+                                            </form>
+                                        </div>
+                                        
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

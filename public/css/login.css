@@ -1,0 +1,110 @@
+html {
+    --s: 50px; /* control the size */
+    --c1: #87bdb1;
+    --c2: #d3e2b6;
+    --c: #0000 75%, var(--c1) 0;
+    --g1: conic-gradient(at calc(200% / 3) 10%, var(--c));
+    --g2: conic-gradient(at 10% calc(200% / 3), var(--c));
+    background:
+        var(--g1), var(--g2),
+        var(--g1) var(--s) var(--s),
+        var(--g2) var(--s) var(--s),
+        var(--g1) calc(2 * var(--s)) calc(2 * var(--s)),
+        var(--g2) calc(2 * var(--s)) calc(2 * var(--s)) var(--c2);
+    background-size: calc(3 * var(--s)) calc(3 * var(--s));
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100svh;
+    font-size: larger;
+}
+
+.form-container {
+    width: 500px;
+    background-color: white;
+    border-radius: 10px;
+    padding: 50px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+form + p, form p {
+    text-align: center;
+}
+
+input, select, button {
+    border-radius: 4px;
+    border: unset;
+    padding: 15px 30px;
+    font-size: larger;
+}
+
+/* Estilo para el campo select */
+select {
+    background-color: #f9f9f9;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 16px;
+    appearance: none; /* Elimina el estilo predeterminado del navegador */
+    -webkit-appearance: none; /* Elimina el estilo en Safari */
+    -moz-appearance: none; /* Elimina el estilo en Firefox */
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+/* Estilo para el select cuando está en foco */
+select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+button {
+    background-color: #1149b1;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0d38a4;
+}
+
+/* Estilo de los mensajes de error */
+.Error {
+    color: rgb(224, 7, 7);
+}
+
+.escondido {
+    display: none;
+}
+
+/* Estilo para los enlaces */
+a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Estilo de elementos que no son visibles pero accesibles */
+.sr-only {
+    position: absolute;
+    left: 10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
