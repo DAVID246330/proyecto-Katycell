@@ -51,6 +51,11 @@ router.get('/reporte-compra', reporteController.reporteCompra);
 
 router.get('/admin/reportes', reporteController.vistaReportes);
 
+// Redirige '/' a '/home'
+router.get('/', (req, res) => {
+    res.redirect('/home');
+});
+
 // ==========================
 // ✅ EXPORTACIÓN
 // ==========================
