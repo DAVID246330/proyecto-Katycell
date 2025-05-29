@@ -4,7 +4,7 @@ const express = require('express');
 const session = require('express-session'); // ✅ ESTA LÍNEA ES OBLIGATORIA
 const path = require('path');
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
 // ==============================
 //  CONEXIÓN A LA BASE DE DATOS
@@ -55,7 +55,8 @@ app.use('/api', usuarioRoutes); // Accesibles como "/api/..."
 
 // ========================
 //  INICIAR SERVIDOR
-// ========================
+// =======================
+
 app.listen(PORT, () => {
     console.log(`✅ Servidor corriendo en: http://localhost:${PORT}`);
 });
