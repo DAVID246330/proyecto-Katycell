@@ -4,17 +4,18 @@
     <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>Katicell tienda online</title> 
-    <link rel="icon" type="image/jpg" href="/images/katicell.jpg">
+    <link rel="icon" type="image/jpg" href="/img/logo.png">
     <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
     <div class="container"> 
         <div class="row"> 
 
+            <!-- Logo y menú de navegación -->
             <div class="col-xs-12 col-s-12 col-m-2 col-l-2">
-                <img src="/img/logo.png" width="170" alt="logo de Katicell"> <!-- Logo de la tienda -->
-                <ul id="menu"> <!-- Menú de navegación -->
-                    <li><a href="/" class="active">Inicio</a></li> <!-- Enlace activo para la página de inicio -->
+                <img src="/img/logo.png" width="170" alt="logo de Katicell">
+                <ul id="menu">
+                    <li><a href="/home" class="active">Inicio</a></li>
                     <li><a href="#">Celulares</a></li>
                     <li><a href="#">Accesorios</a></li>
                     <li><a href="#">Ofertas</a></li>
@@ -23,87 +24,103 @@
 
             <!-- Columna principal de contenido -->
             <div class="col-xs-12 col-s-12 col-m-7 col-l-7">
+
+                <% if (usuario) { %>
+                    <p class="user-greeting" style="font-size: 1em; margin-bottom: -5px; color: #333;">
+                        Hola, <strong><%= usuario.Nombre %></strong>
+                    </p>
+                <% } %>
+
                 <h1 class="title-products">Bienvenidos a Katycell<br>
                     <span class="welcome-phrase">Tu mejor opción en celulares y accesorios</span>
-                </h1> <!-- Título principal -->
-                <h2 class="subtitle-products">Más vendidos</h2> <!-- Subtítulo -->
+                </h1>
 
-                <div class="col-xs-12"> <!-- Sección de búsqueda y ordenamiento -->
-                   <form class="search-form" action="/home" method="get"> <!-- Formulario de búsqueda -->
-    <label for="search-input" class="visually-hidden"></label>
-    <input 
-        type="search" 
-        id="search-input" 
-        name="buscar" 
-        class="search-input" 
-        placeholder="Buscar artículo por nombre" 
-        aria-label="Buscar artículo por nombre"
-        value="<%= buscar || '' %>"
-    >
-    <button type="submit" class="search-button">Buscar</button>
-</form>
+                <h2 class="subtitle-products">Más vendidos</h2>
 
-<form method="get" action="/home">
-    <label for="sort-options" class="select-label"></label>
-    <select id="sort-options" name="categoria" class="select-order" aria-label="Ordenar artículos" onchange="this.form.submit()">
-        <option value="">CATEGORÍAS</option>
-        <% categorias.forEach(categoria => { %>
-            <option value="<%= categoria.ID_Categoria %>" <%= categoria.ID_Categoria == categoriaSeleccionada ? 'selected' : '' %> >
-                <%= categoria.Nombre_Categoria %>
-            </option>
-        <% }) %>
-    </select>
-</form>
+                <!-- Buscador y categorías -->
+                <div class="col-xs-12">
+                    <form class="search-form" action="/home" method="get">
+                        <label for="search-input" class="visually-hidden"></label>
+                        <input 
+                            type="search" 
+                            id="search-input" 
+                            name="buscar" 
+                            class="search-input" 
+                            placeholder="Buscar artículo por nombre" 
+                            aria-label="Buscar artículo por nombre"
+                            value="<%= buscar || '' %>"
+                        >
+                        <button type="submit" class="search-button">Buscar</button>
+                    </form>
 
-
-                    
+                    <form method="get" action="/home">
+                        <label for="sort-options" class="select-label"></label>
+                        <select id="sort-options" name="categoria" class="select-order" aria-label="Ordenar artículos" onchange="this.form.submit()">
+                            <option value="">CATEGORÍAS</option>
+                            <% categorias.forEach(categoria => { %>
+                                <option value="<%= categoria.ID_Categoria %>" <%= categoria.ID_Categoria == categoriaSeleccionada ? 'selected' : '' %>>
+                                    <%= categoria.Nombre_Categoria %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </form>
                 </div>
 
-                <!-- Contenedor para los productos -->
-                <div class="products-container row"> <!-- Aquí va la fila de productos -->
+                <!-- Productos -->
+                <div class="products-container row">
                     <% productos.forEach(producto => { %>
-                      <a class="col-m-4 col-s-6 product-box" href="/detalle-prod?id=<%= producto.ID_Producto %>">
-                          <img alt="<%= producto.Nombre %>" src="<%= producto.Imagen %>" width="120%" />
-                          <div class="hidden offer"></div>
-                          <h3><%= producto.Nombre %></h3>
-                        <!--  <p class="product-description"><%= producto.Descripcion %></p>-->
-                          <strong class="price">$<%= producto.Precio %></strong>
-                          <button class="add-to-cart-btn" onclick="event.preventDefault()">Agregar al carrito</button>
-                      </a>
+                        <a class="col-m-4 col-s-6 product-box" href="/producto/<%= producto.ID_Producto %>">
+                            <img alt="<%= producto.Nombre %>" src="<%= producto.Imagen %>" width="110%">
+                            <div class="hidden offer"></div>
+                            <h3><%= producto.Nombre %></h3>
+                            <p class="product-price"><strong>$<%= producto.Precio.toLocaleString('es-CO') %></strong></p>
+                            <button 
+                            class="add-to-cart-btn"
+                            onclick="agregarAlCarrito(event, '<%= producto.ID_Producto %>', '<%= producto.Nombre %>', '<%= producto.Precio %>', '<%= producto.Imagen %>')"
+                        >
+                            Agregar al carrito
+                        </button>
+                        </a>
                     <% }) %>
-                  </div>
-                  
+                </div>
 
                 <!-- Paginación -->
                 <ul class="pagination">
-                    <li><a href="#" class="active">1</a></li>
-                    <li><a href="#">2</a></li>
-                    <li><a href="#">3</a></li>
-                    <li>...</li>
-                    <li><a href="#">10</a></li>
+                    <li><a href="/home?page=1<%= buscar ? '&buscar=' + buscar : '' %><%= categoriaSeleccionada ? '&categoria=' + categoriaSeleccionada : '' %>" class="<%= pagina === 1 ? 'active' : '' %>">1</a></li>
+                    <% if (totalPaginas >= 2) { %>
+                        <li><a href="/home?page=2<%= buscar ? '&buscar=' + buscar : '' %><%= categoriaSeleccionada ? '&categoria=' + categoriaSeleccionada : '' %>" class="<%= pagina === 2 ? 'active' : '' %>">2</a></li>
+                    <% } %>
+                    <% if (totalPaginas >= 3) { %>
+                        <li><a href="/home?page=3<%= buscar ? '&buscar=' + buscar : '' %><%= categoriaSeleccionada ? '&categoria=' + categoriaSeleccionada : '' %>" class="<%= pagina === 3 ? 'active' : '' %>">3</a></li>
+                    <% } %>
+                    <% if (totalPaginas > 4) { %>
+                        <li>...</li>
+                        <li><a href="/home?page=<%= totalPaginas %><%= buscar ? '&buscar=' + buscar : '' %><%= categoriaSeleccionada ? '&categoria=' + categoriaSeleccionada : '' %>" class="<%= pagina === totalPaginas ? 'active' : '' %>"><%= totalPaginas %></a></li>
+                    <% } %>
                 </ul>
+
             </div>
 
-            <!-- Columna lateral con iconos de carrito -->
+            <!-- Columna lateral: cuenta, login, favoritos y carrito -->
             <div class="col-m-12 col-l-3">
-                <aside class="row"> 
+                <aside class="row">
                     <a href="#" class="col-m-3 col-l-12">
-                        <img alt="icono del carrito" src="/img/my-account.svg" width="40"/>
+                        <img alt="icono de cuenta" src="/img/my-account.svg" width="40">
                         <p>Mi cuenta</p>
                     </a>
-                    <a href="/" class="col-m-3 col-l-12">
-                        <img alt="icono del carrito" src="/img/newsletter.svg" width="40"/>
+                    <a href="/api/login" class="col-m-3 col-l-12">
+                        <img alt="icono de login" src="/img/newsletter.svg" width="40">
                         <p>Iniciar sesión</p>
                     </a>
                     <a href="#" class="col-m-3 col-l-12">
-                        <img alt="icono del carrito" src="/img/favorites.svg" width="40"/>
+                        <img alt="icono de favoritos" src="/img/favorites.svg" width="40">
                         <p>Favoritos</p>
                     </a>
                     <a href="#" class="col-m-3 col-l-12 cart-icon-container" onclick="toggleCart(event)">
-                        <img alt="icono del carrito" src="/img/shopping-cart.svg" width="40"/>
+                        <img alt="icono del carrito" src="/img/shopping-cart.svg" width="40">
                         <p id="cart-item-count">0 artículos en el carrito</p>
-                
-                        <!-- Contenedor desplegable del carrito -->
+
+                        <!-- Carrito desplegable -->
                         <div class="cart-dropdown" id="cartDropdown" style="display: none;">
                             <h2>Tu Carrito</h2>
                             <ul class="cart-items"></ul>
@@ -115,6 +132,7 @@
                     </a>
                 </aside>
             </div>
+
         </div>
     </div>
 
@@ -124,27 +142,27 @@
             <div class="row">
                 <div class="col-s-3">
                     <a href="/pago-seguro" style="text-decoration: none; color: inherit;">
-                        <img alt="icono" src="/img/icon-secure.png" height="60"/>
+                        <img alt="pago seguro" src="/img/icon-secure.png" height="60">
                         <p><strong>Pago seguro</strong></p>
                     </a>
                 </div>
-                <div class="col-s-3"> 
-                    <img alt="icono" src="/img/icon-shipping.png" height="60"/>
+                <div class="col-s-3">
+                    <img alt="envíos" src="/img/icon-shipping.png" height="60">
                     <p><strong>Envíos a todo el país</strong></p>
                 </div>
-                <div class="col-s-3"> 
-                    <img alt="icono" src="/img/icon-customer-service.png" height="60"/>
+                <div class="col-s-3">
+                    <img alt="soporte" src="/img/icon-customer-service.png" height="60">
                     <p><strong>Soporte</strong></p>
                 </div>
-                <div class="col-s-3"> 
-                    <img alt="icono" src="/img/icon-refund.png" height="60"/>
+                <div class="col-s-3">
+                    <img alt="envíos gratis" src="/img/icon-refund.png" height="60">
                     <p><strong>Envíos gratis a partir de 2.000.000</strong></p>
                 </div>
             </div>
         </div>
-        
+
+        <script src="carrito.js"></script>
         &copy; David Pacheco
     </footer>
-
 </body>
 </html>

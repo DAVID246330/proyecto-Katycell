@@ -1,0 +1,15 @@
+body {
+    font-family: sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+    padding: 40px;
+  }
+  
+  .contenedor {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    display: inline-block;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  

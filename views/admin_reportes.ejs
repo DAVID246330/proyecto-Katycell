@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportes</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-wrapper">
+    <aside class="sidebar">
+      <h2>Katycell Admin</h2>
+      <nav>
+        <ul>
+          <li><a href="/admin">Dashboard</a></li>
+          <li><a href="#">Gestión de Productos</a></li>
+          <li><a href="#">Gestión de Usuarios</a></li>
+          <li><a href="/reporte-compra">Órdenes</a></li>
+          <li><a href="#" class="active">Reportes</a></li>
+        </ul>
+      </nav>
+      <button class="logout-button">Cerrar sesión</button>
+    </aside>
+
+    <main class="main-content">
+      <header>
+        <h1>Reportes de Pedidos</h1>
+      </header>
+
+      <section class="section">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Total</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% pedidos.forEach(pedido => { %>
+              <tr>
+                <td><%= pedido.ID_Pedido %></td>
+                <td><%= pedido.Nombre %></td>
+                <td><%= pedido.Fecha_Pedido.toISOString().slice(0, 10) %></td>
+                <td>$<%= Number(pedido.Total).toFixed(2) %></td>
+
+                <td>
+                    <a href="/reporte-compra?id=<%= pedido.ID_Pedido %>" target="_blank" class="btn-reporte">Ver Reporte</a>
+
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

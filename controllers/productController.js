@@ -10,42 +10,68 @@ exports.agregarProducto = (req, res) => {
         Precio,
         Precio_Descuento,
         Stock,
-        Imagen,
         ID_Categoria
     } = req.body;
 
-    // Validar campos obligatorios
-    if (!Nombre || !Descripcion || !Precio || !Stock || !Imagen || !ID_Categoria) {
-        return res.status(400).send('Por favor, completa todos los campos.');
+    // Validar imagen
+    if (!req.file) {
+        return res.status(400).send('Por favor, sube una imagen.');
     }
 
-    // Crear objeto con datos del formulario
-    const nuevoProducto = {
-        Nombre,
-        Descripcion,
-        Precio,
-        Precio_Descuento,
-        Stock,
-        Imagen,
-        ID_Categoria
-    };
+    const Imagen = "/img/" + req.file.filename;
 
-    // Consulta SQL para insertar producto
-    const sql = 'INSERT INTO producto SET ?';
-
-    db.query(sql, nuevoProducto, (err, resultado) => {
+    //  verificamos si ya existe un producto con ese nombre
+    const buscarSQL = 'SELECT * FROM producto WHERE Nombre = ?';
+    db.query(buscarSQL, [Nombre], (err, resultados) => {
         if (err) {
-            console.error('❌ Error al insertar producto:', err);
-            return res.status(500).send('Error al agregar el producto');
+            console.error('❌ Error al buscar el producto:', err);
+            return res.status(500).send('Error al verificar el producto');
         }
 
-        console.log('✅ Producto insertado correctamente:', resultado);
-        res.redirect('/admin');
+        if (resultados.length > 0) {
+            // Producto ya existe, actualizamos solo el stock
+            const productoExistente = resultados[0];
+            const nuevoStock = productoExistente.Stock + parseInt(Stock);
+
+            const actualizarSQL = 'UPDATE producto SET Stock = ? WHERE ID_Producto = ?';
+            db.query(actualizarSQL, [nuevoStock, productoExistente.ID_Producto], (err, resultado) => {
+                if (err) {
+                    console.error('❌ Error al actualizar el stock:', err);
+                    return res.status(500).send('Error al actualizar el stock');
+                }
+
+                console.log('✅ Stock actualizado correctamente');
+                return res.redirect('/admin');
+            });
+
+        } else {
+            // Producto no existe, se inserta nuevo
+            const nuevoProducto = {
+                Nombre,
+                Descripcion,
+                Precio,
+                Precio_Descuento,
+                Stock,
+                Imagen,
+                ID_Categoria
+            };
+
+            const insertarSQL = 'INSERT INTO producto SET ?';
+            db.query(insertarSQL, nuevoProducto, (err, resultado) => {
+                if (err) {
+                    console.error('❌ Error al insertar producto:', err);
+                    return res.status(500).send('Error al agregar el producto');
+                }
+
+                console.log('✅ Producto insertado correctamente');
+                res.redirect('/admin');
+            });
+        }
     });
 };
 
 /** =========================
- *  MOSTRAR PRODUCTOS EN /admin CON BÚSQUEDA
+ *  MOSTRAR PRODUCTOS EN /admin 
  *  ========================= */
 exports.mostrarProductosAdmin = (req, res) => {
     const buscar = req.query.buscar || '';
@@ -99,6 +125,41 @@ exports.eliminarProducto = (req, res) => {
     });
 };
 
+/** =========================
+ *  DETALLE DE PRODUCTO POR ID
+ *  ========================= */
+exports.detalleProductoVista = async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const query = `
+            SELECT 
+                ID_Producto, 
+                Nombre, 
+                Descripcion, 
+                Precio, 
+                Precio_Descuento, 
+                Imagen, 
+                Stock 
+            FROM Producto 
+            WHERE ID_Producto = ?`;
+
+            const producto = await new Promise((resolve, reject) => {
+                db.query(query, [id], (err, results) => {
+                    if (err) return reject(err);
+                    if (results.length === 0) return reject("Producto no encontrado");
+                    resolve(results[0]);
+            });
+        });
+
+        res.render("detalle-prod", { producto });
+
+    } catch (error) {
+        console.error("❌ Error al obtener producto:", error);
+        res.status(500).send("Producto no disponible");
+
+    }
+};
 
 /** =========================
  *  MOSTRAR PRODUCTOS EN LA PÁGINA DE INICIO
@@ -106,10 +167,12 @@ exports.eliminarProducto = (req, res) => {
 exports.mostrarProductosHome = (req, res) => {
     const buscar = req.query.buscar || "";
     const categoriaSeleccionada = req.query.categoria || "";
+    const pagina = parseInt(req.query.page) || 1;
+    const productosPorPagina = 9;
+    const offset = (pagina - 1) * productosPorPagina;
     const valores = [];
 
-    let query = `
-        SELECT Producto.*, Categoria.Nombre_Categoria 
+    let baseQuery = `
         FROM Producto 
         JOIN Categoria ON Producto.ID_Categoria = Categoria.ID_Categoria
     `;
@@ -126,32 +189,119 @@ exports.mostrarProductosHome = (req, res) => {
         valores.push(categoriaSeleccionada);
     }
 
-    if (condiciones.length > 0) {
-        query += " WHERE " + condiciones.join(" AND ");
+    // Armamos condiciones si hay filtros
+    const whereClause = condiciones.length > 0 ? `WHERE ${condiciones.join(" AND ")}` : "";
+
+    const queryProductos = `
+        SELECT Producto.*, Categoria.Nombre_Categoria 
+        ${baseQuery} 
+        ${whereClause}
+        ORDER BY Producto.ID_Producto DESC 
+        LIMIT ? OFFSET ?
+    `;
+
+    const queryTotal = `
+        SELECT COUNT(*) AS total 
+        ${baseQuery} 
+        ${whereClause}
+    `;
+
+    exports.reporteCompra = (req, res) => {
+  const idPedido = req.query.id;
+
+  if (!idPedido) {
+    return res.status(400).send('Falta el ID del pedido');
+  }
+
+  // Consulta principal: obtener datos del pedido, usuario y detalles
+  const sql = `
+    SELECT 
+      p.ID_Pedido, p.Fecha, p.Total,
+      u.Nombre, u.Email, u.Direccion, u.Telefono, u.MetodoPago,
+      dp.Cantidad, dp.PrecioUnitario,
+      pr.Nombre AS NombreProducto
+    FROM pedido p
+    JOIN usuario u ON p.ID_Usuario = u.ID_Usuario
+    JOIN detalle_pedido dp ON p.ID_Pedido = dp.ID_Pedido
+    JOIN producto pr ON dp.ID_Producto = pr.ID_Producto
+    WHERE p.ID_Pedido = ?
+  `;
+
+  db.query(sql, [idPedido], (err, resultados) => {
+    if (err) {
+      console.error('Error en consulta reporte compra:', err);
+      return res.status(500).send('Error al obtener el reporte de compra');
     }
+
+    if (resultados.length === 0) {
+      return res.status(404).send('Pedido no encontrado');
+    }
+
+    // Extraemos datos generales del pedido y usuario del primer registro
+    const pedido = {
+      ID_Pedido: resultados[0].ID_Pedido,
+      Fecha: resultados[0].Fecha,
+      Total: resultados[0].Total,
+    };
+
+    const usuario = {
+      Nombre: resultados[0].Nombre,
+      Email: resultados[0].Email,
+      Direccion: resultados[0].Direccion,
+      Telefono: resultados[0].Telefono,
+      MetodoPago: resultados[0].MetodoPago,
+    };
+
+    // Construimos el array de detalles
+    const detalles = resultados.map(row => ({
+      NombreProducto: row.NombreProducto,
+      Cantidad: row.Cantidad,
+      PrecioUnitario: row.PrecioUnitario,
+    }));
+
+    res.render('reporte-compra', { pedido, usuario, detalles });
+  });
+};
+
+    // Agregamos LIMIT y OFFSET al final de los valores
+    const valoresProductos = [...valores, productosPorPagina, offset];
 
     const categoriasQuery = "SELECT * FROM Categoria";
 
-    db.query(query, valores, (err, productos) => {
+
+    db.query(queryTotal, valores, (err, totalResult) => {
         if (err) {
-            console.error('❌ Error al obtener productos para home:', err.message);
-            return res.status(500).send('Error al cargar los productos');
+            console.error('❌ Error al contar productos:', err.message);
+            return res.status(500).send('Error al contar los productos');
         }
 
-        db.query(categoriasQuery, (err, categorias) => {
+        const totalProductos = totalResult[0].total;
+        const totalPaginas = Math.ceil(totalProductos / productosPorPagina);
+
+        db.query(queryProductos, valoresProductos, (err, productos) => {
             if (err) {
-                console.error('❌ Error al obtener categorías:', err.message);
-                return res.status(500).send('Error al cargar las categorías');
+                console.error('❌ Error al obtener productos para home:', err.message);
+                return res.status(500).send('Error al cargar los productos');
             }
 
-            res.render('home', {
-                title: 'Katicell | Inicio',
-                productos,
-                categorias,
-                buscar,
-                categoriaSeleccionada
+
+            db.query(categoriasQuery, (err, categorias) => {
+                if (err) {
+                    console.error('❌ Error al obtener categorías:', err.message);
+                    return res.status(500).send('Error al cargar las categorías');
+                }
+
+                res.render('home', {
+                    title: 'Katicell | Inicio',
+                    productos,
+                    categorias,
+                    buscar,
+                    categoriaSeleccionada,
+                    usuario: req.session.usuario || null,
+                    pagina,
+                    totalPaginas
+                });
             });
         });
     });
 };
-

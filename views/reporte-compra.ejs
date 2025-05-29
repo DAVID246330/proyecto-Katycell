@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reporte de Compra - Katicell</title>
+  <link rel="stylesheet" href="/css/reporte-compra.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <div class="container">
+    <h1>Reporte de Compra</h1>
+
+    <section class="pedido-info">
+      <h2>Datos del Pedido</h2>
+      <p><strong>ID Pedido:</strong> <%= pedido.ID_Pedido %></p>
+      <p><strong>Fecha:</strong> <%= new Date(pedido.Fecha).toLocaleString() %></p>
+      <p><strong>Total:</strong> $<%= pedido.Total.toFixed(2) %></p>
+    </section>
+
+    <section class="usuario-info">
+      <h2>Datos del Usuario</h2>
+      <p><strong>Nombre:</strong> <%= usuario.Nombre %></p>
+      <p><strong>Correo:</strong> <%= usuario.Correo_Electronico %></p>
+      <p><strong>Dirección:</strong> <%= usuario.Dirección %></p>
+      <p><strong>Teléfono:</strong> <%= usuario.Teléfono %></p>
+    </section>
+
+    <section class="pago-info">
+        <h2>Información de Pago</h2>
+        <p><strong>monto:</strong> <%= pedido.monto %></p>
+        <p><strong>Estado del Pago:</strong> <%= pedido.estado_pago %></p>
+        <p><strong>Fecha de Pago:</strong> 
+            <%= pedido.Fecha_Pago ? new Date(pedido.Fecha_Pago).toLocaleDateString() : 'No disponible' %>
+          </p>          
+      </section>
+      
+    <section class="detalle-productos">
+      <h2>Detalle de Productos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% detalles.forEach(det => { %>
+            <tr>
+              <td><%= det.NombreProducto %></td>
+              <td><%= det.Cantidad %></td>
+              <td>$<%= det.PrecioUnitario.toFixed(2) %></td>
+              <td>$<%= (det.Cantidad * det.PrecioUnitario).toFixed(2) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3">Total a Pagar</td>
+            <td>$<%= pedido.Total.toFixed(2) %></td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

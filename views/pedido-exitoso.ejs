@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pedido Exitoso</title>
+  <link rel="stylesheet" href="/css/pedido-exitoso.css">
+</head>
+<body>
+  <div class="contenedor">
+    <h1>¡Gracias por tu compra, <%= nombreUsuario %>!</h1>
+    <p>Tu pedido ha sido registrado correctamente.</p>
+    <p>Enviaremos tu compra a la dirección: <strong><%= direccion %></strong></p>
+    <p>Método de pago seleccionado: <strong><%= metodo_pago %></strong></p>
+
+    <a href="/home">Volver a la tienda</a>
+  </div>
+</body>
+</html>

@@ -16,7 +16,7 @@
                     <li><a href="#">Dashboard</a></li>
                     <li><a href="#">Gestión de Productos</a></li>
                     <li><a href="#">Gestión de Usuarios</a></li>
-                    <li><a href="#">Órdenes</a></li>
+                    <li><a href="/admin/reportes">Órdenes</a></li>
                     <li><a href="#">Reportes</a></li>
                 </ul>
             </nav>
@@ -27,7 +27,14 @@
             <header>
                 <h1>Bienvenido al área de administración</h1>
             </header>
+        
+            <% if (mensaje) { %>
+                <div class="mensaje-bienvenida">
+                  <p><%= mensaje %></p>
+                </div>
+              <% } %>
             <section class="section">
+
                 <h2>Productos</h2>
 
                 <button class="btn-primary" onclick="abrirModal()">Agregar Producto</button>
@@ -35,7 +42,7 @@
 <div id="modalAgregarProducto" class="modal">
     <div class="modal-contenido">
       <h2>Agregar nuevo producto</h2>
-      <form action="/productos/agregar" method="POST">
+      <form action="/productos/agregar" method="POST" enctype="multipart/form-data">
         <label>Nombre:</label>
         <input type="text" name="Nombre" required>
   
@@ -45,14 +52,14 @@
         <label>Precio:</label>
         <input type="number" name="Precio" required>
   
-        <label>Descuento (%):</label>
-        <input type="number" name="Precio_Descuento" value="0">
+        <label>Precio con descuento:</label>
+        <input type="number" name="Precio_Descuento" value="">
   
         <label>Cantidad:</label>
         <input type="number" name="Stock" required>
   
-        <label>URL/Img:</label>
-        <input type="text" name="Imagen" required>
+        <label>Imagen:</label>
+        <input type="file" name="Imagen" accept="image/*" required>
   
         <label for="productCategoria">Categoría:</label>
         <select id="productCategoria" name="ID_Categoria" required>
