@@ -1,84 +1,150 @@
+/* Estilos base */
 body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(to right, #f1f1f1, #e0e0e0);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #f1f1f1, #e0e0e0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Contenedor principal del formulario */
+.form-container {
+  background-color: #fff;
+  padding: 2em 3em;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Logo centrado */
+.logo-container {
+  margin-bottom: 1em;
+}
+
+.logo {
+  max-width: 150px;
+  height: auto;
+}
+
+/* Títulos y textos */
+.form-container h1 {
+  margin-bottom: 0.3em;
+  color: #222;
+}
+
+.form-container p {
+  color: #666;
+  font-size: 0.95em;
+}
+
+.welcome-message {
+  margin-top: 0.5em;
+  margin-bottom: 1.5em;
+  color: #444;
+  font-size: 0.95em;
+}
+
+/* Mensaje de error */
+.form-container .error {
+  color: #c62828;
+  font-weight: bold;
+  margin: 1em 0;
+}
+
+/* Formulario */
+form {
+  margin-top: 1.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2em;
+}
+
+label {
+  text-align: left;
+  font-weight: bold;
+  color: #333;
+}
+
+input {
+  padding: 0.8em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+/* Botón */
+button {
+  padding: 0.8em;
+  background-color: #0288d1;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0277bd;
+}
+
+/* Enlaces */
+.form-container a {
+  color: #0288d1;
+  text-decoration: none;
+}
+
+.form-container a:hover {
+  text-decoration: underline;
+}
+
+/* Grupo de enlaces */
+.link-group {
+  margin-top: 1em;
+  font-size: 0.9em;
+}
+
+/* RESPONSIVIDAD para pantallas pequeñas */
+@media (max-width: 480px) {
+  body {
+    padding: 1em;
+    height: auto;
+    flex-direction: column;
   }
 
   .form-container {
-    background-color: #fff;
-    padding: 2em 3em;
-    border-radius: 10px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
+    padding: 1.5em 1.2em;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   }
 
   .form-container h1 {
-    margin-bottom: 0.3em;
-    color: #222;
+    font-size: 1.5em;
   }
 
-  .form-container p {
-    color: #666;
-    font-size: 0.95em;
+  .form-container p,
+  .link-group {
+    font-size: 0.9em;
   }
 
-  .form-container .error {
-    color: #c62828;
-    font-weight: bold;
-    margin: 1em 0;
-  }
-
-  form {
-    margin-top: 1.5em;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2em;
-  }
-
-  label {
-    text-align: left;
-    font-weight: bold;
-    color: #333;
-  }
-
-  input {
-    padding: 0.8em;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+  input,
+  button {
     font-size: 1em;
   }
 
   button {
-    padding: 0.8em;
-    background-color: #0288d1;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    padding: 0.7em;
   }
 
-  button:hover {
-    background-color: #0277bd;
+  label {
+
+    font-size: 0.95em;
   }
 
-  .form-container a {
-    color: #0288d1;
-    text-decoration: none;
+  .logo {
+    max-width: 120px;
   }
-
-  .form-container a:hover {
-    text-decoration: underline;
-  }
-
-  .link-group {
-    margin-top: 1em;
-    font-size: 0.9em;
-  }
+}

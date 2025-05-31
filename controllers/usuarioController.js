@@ -43,7 +43,7 @@ exports.login = (req, res) => {
 // REGISTRO
 exports.register = async (req, res) => {
     const { user, email, password, telefono, direccion } = req.body;
-    const rol = 'Administrador';
+    const rol = 'Cliente';
 
     if (!user || !email || !password || !telefono || !direccion) {
         return res.render('register', { mensajeError: 'Todos los campos son obligatorios.' });

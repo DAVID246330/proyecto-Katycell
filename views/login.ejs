@@ -9,8 +9,14 @@
 <body>
   <main>
     <div class="form-container">
+
+      <!-- Logo de la tienda -->
+      <div class="logo-container">
+        <img src="/img/logo.png" alt="Logo de Katicell" class="logo" />
+      </div>
+
       <h1>Iniciar Sesión</h1>
-      <p>Ingresa tus credenciales para acceder</p>
+      <p class="welcome-message">Bienvenido/a al portal de clientes de <strong>Katicell</strong>. Accede a tu cuenta para gestionar tus servicios.</p>
 
       <% if (mensajeError) { %>
         <p class="error"><%= mensajeError %></p>
@@ -30,6 +36,7 @@
         <p><a href="/recuperar-password">¿Olvidaste tu contraseña?</a></p>
         <p>¿Todavía no tienes una cuenta? - <a href="/api/register">Regístrate</a></p>
       </div>
+
     </div>
   </main>
 </body>
