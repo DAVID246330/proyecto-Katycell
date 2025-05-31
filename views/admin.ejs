@@ -43,28 +43,30 @@
     <div class="modal-contenido">
       <h2>Agregar nuevo producto</h2>
       <form action="/productos/agregar" method="POST" enctype="multipart/form-data">
-        <label>Nombre:</label>
-        <input type="text" name="Nombre" required>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required>
   
-        <label>Descripción:</label>
-        <input type="text" name="Descripcion" required>
+        <label for="descripcion">Descripción:</label>
+        <input type="text" id="descripcion" name="descripcion" required>
   
-        <label>Precio:</label>
-        <input type="number" name="Precio" required>
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" name="precio" step="0.01" required>
   
-        <label>Precio con descuento:</label>
-        <input type="number" name="Precio_Descuento" value="">
+        <label for="precio_descuento">Precio con descuento:</label>
+        <input type="number" id="precio_descuento" name="precio_descuento" step="0.01">
   
-        <label>Cantidad:</label>
-        <input type="number" name="Stock" required>
+        <label for="stock">Cantidad:</label>
+        <input type="number" id="stock" name="stock" required>
   
-        <label>Imagen:</label>
-        <input type="file" name="Imagen" accept="image/*" required>
+        <label for="imagen">Imagen:</label>
+        <input type="file" id="imagen" name="imagen" accept="image/*" required>
   
         <label for="productCategoria">Categoría:</label>
-        <select id="productCategoria" name="ID_Categoria" required>
+        <select id="productCategoria" name="id_categoria" required>
           <% categorias.forEach(categoria => { %>
-            <option value="<%= categoria.ID_Categoria %>"><%= categoria.Nombre_Categoria %></option>
+            <option value="<%= categoria.id_categoria %>">
+              <%= categoria.nombre_categoria %>
+            </option>
           <% }) %>
         </select>
   
@@ -75,6 +77,7 @@
       </form>
     </div>
   </div>
+  
   
 
                 <button class="regresar-home">
@@ -114,18 +117,18 @@
                         <tbody>
                             <% productos.forEach(producto => { %>
                                 <tr>
-                                    <td><%= producto.ID_Producto %></td>
-                                    <td><%= producto.Nombre %></td>
-                                    <td class="descripcion" title="<%= producto.Descripcion %>"><%= producto.Descripcion %></td>                                 
-                                    <td>$<%= producto.Precio %></td>
-                                    <td><%= producto.Precio_Descuento %>%</td>
-                                    <td><%= producto.Stock %></td>
-                                    <td><img src="<%= producto.Imagen %>" alt="Imagen del producto" style="width: 60px; height: auto;"></td>
+                                    <td><%= producto.id_producto %></td>
+                                    <td><%= producto.nombre %></td>
+                                    <td class="descripcion" title="<%= producto.Descripcion %>"><%= producto.descripcion %></td>                                 
+                                    <td>$<%= producto.precio %></td>
+                                    <td><%= producto.precio_descuento %>%</td>
+                                    <td><%= producto.stock %></td>
+                                    <td><img src="<%= producto.imagen %>" alt="Imagen del producto" style="width: 60px; height: auto;"></td>
                                     <td>
                                         <div class="acciones">
                                             <button class="edit-button">Editar</button>
                                         
-                                            <form action="/productos/eliminar/<%= producto.ID_Producto %>" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este producto?')">
+                                            <form action="/productos/eliminar/<%= producto.id_producto %>" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este producto?')">
                                                 <button type="submit" class="delete-button">Eliminar</button>
                                             </form>
                                         </div>

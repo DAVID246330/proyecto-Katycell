@@ -33,9 +33,9 @@ exports.mostrarConfirmacionCompra = (req, res) => {
 };
 
 // Finaliza la compra
-exports.finalizarCompra = (req, res) => {
-    const idUsuario = req.session.usuario?.ID_Usuario;
-    const nombreUsuario = req.session.usuario?.Nombre;
+exports.finalizarCompra = async (req, res) => {
+    const idUsuario = req.session.usuario?.id_usuario;
+    const nombreUsuario = req.session.usuario?.nombre;
     const { direccion = null, metodo_pago = null, productos } = req.body;
 
     console.log('📦 Productos recibidos para compra:', productos);
@@ -55,90 +55,65 @@ exports.finalizarCompra = (req, res) => {
     const total = productos.reduce((sum, p) => sum + (parseFloat(p.precio) * parseInt(p.cantidad)), 0);
     console.log('💰 Total calculado del pedido:', total);
 
-    db.query(
-        'INSERT INTO pedido (ID_Usuario, Fecha_Pedido, Estado_Pedido, Total) VALUES (?, NOW(), ?, ?)',
-        [idUsuario, 'Pendiente', total],
-        (err, pedidoResult) => {
-            if (err) {
-                console.error('❌ Error al registrar el pedido:', err);
-                return res.status(500).json({ error: 'Ocurrió un error al registrar el pedido.' });
-            }
+    try {
+        const pedidoResult = await db.query(
+            'INSERT INTO pedido (id_usuario, fecha_pedido, estado_pedido, total) VALUES ($1, NOW(), $2, $3) RETURNING id_pedido',
+            [idUsuario, 'pendiente', total]
+        );
 
-            const idPedido = pedidoResult.insertId;
-            console.log(`📦 Pedido #${idPedido} registrado correctamente.`);
+        const idPedido = pedidoResult.rows[0].id_pedido;
+        console.log(`📦 Pedido #${idPedido} registrado correctamente.`);
 
-            let errores = false;
-            let completados = 0;
-
-            productos.forEach(prod => {
-                console.log(`➡️ Insertando detalle del producto ID: ${prod.id}`);
-
-                db.query(
-                    'INSERT INTO detalle_pedido (ID_Pedido, ID_Producto, Cantidad, Precio) VALUES (?, ?, ?, ?)',
-                    [idPedido, prod.id, prod.cantidad, prod.precio],
-                    (err) => {
-                        if (err) {
-                            console.error(`❌ Error al insertar detalle del producto ${prod.id}:`, err);
-                            errores = true;
-                        } else {
-                            console.log(`✅ Detalle del producto ${prod.id} insertado correctamente.`);
-                        }
-
-                        completados++;
-                        if (completados === productos.length) {
-                            if (errores) {
-                                return res.status(500).json({ error: 'El pedido fue creado, pero algunos detalles no se guardaron correctamente.' });
-                            }
-
-                            db.query(
-                                'SELECT ID_metodo_pago, nombre_metodo FROM metodo_pago WHERE nombre_metodo = ?',
-                                [metodo_pago],
-                                (err, metodoResult) => {
-                                    if (err || metodoResult.length === 0) {
-                                        console.error('❌ Error al obtener el método de pago:', err || 'No encontrado');
-                                        return res.status(500).json({ error: 'Método de pago inválido.' });
-                                    }
-
-                                    const idMetodo = metodoResult[0].ID_metodo_pago;
-                                    const nombreMetodo = metodoResult[0].nombre_metodo;
-
-                                    console.log(`💳 Método de pago encontrado: ${nombreMetodo} (ID: ${idMetodo})`);
-
-                                    db.query(
-                                        'INSERT INTO pago (monto, fecha_pago, estado_pago, pedido_ID_Pedido, metodo_pago_ID_metodo_pago) VALUES (?, NOW(), ?, ?, ?)',
-                                        [total, 'pendiente', idPedido, idMetodo],
-                                        (err) => {
-                                            if (err) {
-                                                console.error('❌ Error al insertar el pago:', err);
-                                                return res.status(500).json({ error: 'Error al registrar el pago.' });
-                                            }
-
-                                            if (direccion) {
-                                                console.log(`📍 Actualizando dirección del usuario (ID: ${idUsuario}) a: ${direccion}`);
-                                                db.query(
-                                                    'UPDATE usuario SET Dirección = ? WHERE ID_Usuario = ?',
-                                                    [direccion, idUsuario]
-                                                );
-                                            }
-
-                                            // Guardar resumen en sesión para mostrar en la vista final
-                                            req.session.carrito = [];
-                                            req.session.nombreUsuario = nombreUsuario;
-                                            req.session.direccion = direccion;
-                                            req.session.metodo_pago = nombreMetodo;
-
-                                            console.log('✅ Pedido finalizado correctamente.');
-                                            return res.json({ mensaje: '✅ Pedido registrado con éxito.' });
-                                        }
-                                    );
-                                }
-                            );
-                        }
-                    }
-                );
-            });
+        for (const prod of productos) {
+            console.log(`➡️ Insertando detalle del producto ID: ${prod.id}`);
+            await db.query(
+                'INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio) VALUES ($1, $2, $3, $4)',
+                [idPedido, prod.id, prod.cantidad, prod.precio]
+            );
+            console.log(`✅ Detalle del producto ${prod.id} insertado correctamente.`);
         }
-    );
+
+        const metodoResult = await db.query(
+            'SELECT id_metodo_pago, nombre_metodo FROM metodo_pago WHERE nombre_metodo = $1',
+            [metodo_pago]
+        );
+
+        if (metodoResult.rowCount === 0) {
+            console.error('❌ Método de pago no encontrado');
+            return res.status(400).json({ error: 'Método de pago inválido.' });
+        }
+
+        const idMetodo = metodoResult.rows[0].id_metodo_pago;
+        const nombreMetodo = metodoResult.rows[0].nombre_metodo;
+
+        console.log(`💳 Método de pago encontrado: ${nombreMetodo} (ID: ${idMetodo})`);
+
+        await db.query(
+            'INSERT INTO pago (monto, fecha_pago, estado_pago, pedido_id_pedido, metodo_pago_id_metodo_pago) VALUES ($1, NOW(), $2, $3, $4)',
+            [total, 'pendiente', idPedido, idMetodo]
+        );
+
+        if (direccion) {
+            console.log(`📍 Actualizando dirección del usuario (ID: ${idUsuario}) a: ${direccion}`);
+            await db.query(
+                'UPDATE usuario SET direccion = $1 WHERE id_usuario = $2',
+                [direccion, idUsuario]
+            );
+        }
+
+        // Guardar resumen en sesión para mostrar en la vista final
+        req.session.carrito = [];
+        req.session.nombreUsuario = nombreUsuario;
+        req.session.direccion = direccion;
+        req.session.metodo_pago = nombreMetodo;
+
+        console.log('✅ Pedido finalizado correctamente.');
+        return res.json({ mensaje: '✅ Pedido registrado con éxito.' });
+
+    } catch (err) {
+        console.error('❌ Error durante el proceso de compra:', err);
+        return res.status(500).json({ error: 'Error al procesar el pedido.' });
+    }
 };
 
 // Vista final después de la compra

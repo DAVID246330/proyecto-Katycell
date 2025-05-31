@@ -40,13 +40,13 @@
           <tbody>
             <% pedidos.forEach(pedido => { %>
               <tr>
-                <td><%= pedido.ID_Pedido %></td>
-                <td><%= pedido.Nombre %></td>
-                <td><%= pedido.Fecha_Pedido.toISOString().slice(0, 10) %></td>
-                <td>$<%= Number(pedido.Total).toFixed(2) %></td>
+                <td><%= pedido.id_pedido %></td>
+                <td><%= pedido.nombre %></td>
+                <td><%= pedido.fecha_pedido.toISOString().slice(0, 10) %></td>
+                <td>$<%= Number(pedido.total).toFixed(2) %></td>
 
                 <td>
-                    <a href="/reporte-compra?id=<%= pedido.ID_Pedido %>" target="_blank" class="btn-reporte">Ver Reporte</a>
+                    <a href="/reporte-compra?id=<%= pedido.id_pedido %>" target="_blank" class="btn-reporte">Ver Reporte</a>
 
                 </td>
               </tr>

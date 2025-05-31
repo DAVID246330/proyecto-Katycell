@@ -1,38 +1,3 @@
- <!--<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión</title>
-    <link rel="stylesheet" href="/css/login.css">
-</head>
-<body>
-    <main>
-        <div class="form-container">
-            <h1>Iniciar Sesión</h1>
-            <p>Ingresa tus credenciales para acceder</p>
-            
-            <% if (mensajeError) { %>
-                <p class="error"><%= mensajeError %></p>
-            <% } %>
-
-            <form action="/api/login" method="POST">
-                <label for="email">Usuario:</label>
-                <input type="text" name="email" id="email" placeholder="correo electronico" required>
-
-                <label for="password">Contraseña:</label>
-                <input type="password" name="password" id="password" placeholder="Contraseña" required>
-
-                <button type="submit">Iniciar Sesión</button>
-            </form>
-
-            <p>¿Todavía no tienes una cuenta? - <a href="/register">Regístrate</a></p>
-        </div>
-    </main>
-</body>
-
-</html>-->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -40,92 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Iniciar Sesión | Katicell</title>
   <link rel="stylesheet" href="/css/login.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #f1f1f1, #e0e0e0);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .form-container {
-      background-color: #fff;
-      padding: 2em 3em;
-      border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
-    }
-
-    .form-container h1 {
-      margin-bottom: 0.3em;
-      color: #222;
-    }
-
-    .form-container p {
-      color: #666;
-      font-size: 0.95em;
-    }
-
-    .form-container .error {
-      color: #c62828;
-      font-weight: bold;
-      margin: 1em 0;
-    }
-
-    form {
-      margin-top: 1.5em;
-      display: flex;
-      flex-direction: column;
-      gap: 1.2em;
-    }
-
-    label {
-      text-align: left;
-      font-weight: bold;
-      color: #333;
-    }
-
-    input {
-      padding: 0.8em;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1em;
-    }
-
-    button {
-      padding: 0.8em;
-      background-color: #0288d1;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 1em;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #0277bd;
-    }
-
-    .form-container a {
-      color: #0288d1;
-      text-decoration: none;
-    }
-
-    .form-container a:hover {
-      text-decoration: underline;
-    }
-
-    .link-group {
-      margin-top: 1em;
-      font-size: 0.9em;
-    }
-  </style>
 </head>
 <body>
   <main>
@@ -149,7 +28,7 @@
 
       <div class="link-group">
         <p><a href="/recuperar-password">¿Olvidaste tu contraseña?</a></p>
-        <p>¿Todavía no tienes una cuenta? - <a href="/register">Regístrate</a></p>
+        <p>¿Todavía no tienes una cuenta? - <a href="/api/register">Regístrate</a></p>
       </div>
     </div>
   </main>

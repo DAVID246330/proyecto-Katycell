@@ -2,16 +2,17 @@ const express = require('express');
 const router = express.Router();
 const usuarioController = require('../controllers/usuarioController');
 
-// Ruta GET para renderizar el formulario de login
+// LOGIN
 router.get('/login', (req, res) => {
-    res.render('login', { mensajeError: null });  // Muestra el formulario sin errores
+    res.render('login', { mensajeError: null });
 });
+router.post('/login', usuarioController.login);
 
-// Ruta POST para procesar el login
-router.post('/login', usuarioController.login);  // Usamos el controlador 'login' para manejar el formulario
-
-
+// REGISTRO
+router.get('/register', (req, res) => {
+    res.render('register', { mensajeError: null });
+});
+router.post('/register', usuarioController.register);
 
 module.exports = router;
-
 

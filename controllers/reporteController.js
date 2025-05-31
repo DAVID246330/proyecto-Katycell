@@ -1,85 +1,99 @@
-const db = require('../models/db');
+const pool = require('../models/db');
 
-exports.vistaReportes = (req, res) => {
-    const sql = `
-      SELECT p.ID_Pedido, p.Fecha_Pedido, p.Total, u.Nombre 
+/** =========================
+ *  VISTA DE REPORTES
+ *  ========================= */
+exports.vistaReportes = async (req, res) => {
+  try {
+    const { rows: pedidos } = await pool.query(`
+      SELECT
+        p.id_pedido,
+        p.fecha_pedido,
+        p.total,
+        u.nombre
       FROM pedido p
-      JOIN usuario u ON p.ID_Usuario = u.ID_Usuario
-      ORDER BY p.ID_Pedido DESC
-    `;
-  
-    db.query(sql, (err, resultados) => {
-      if (err) {
-        console.error('Error al obtener reportes:', err);
-        return res.status(500).send('Error al cargar los reportes');
-      }
-  
-      res.render('admin_reportes', { pedidos: resultados });
-    });
-  };
-  
+      JOIN usuario u ON p.id_usuario = u.id_usuario
+      ORDER BY p.id_pedido DESC
+    `);
 
-exports.reporteCompra = (req, res) => {
+    res.render('admin_reportes', { pedidos });
+  } catch (err) {
+    console.error('❌ Error al obtener reportes:', err);
+    res.status(500).send('Error al cargar los reportes');
+  }
+};
+
+/** =========================
+ *  REPORTE DE COMPRA DETALLADO
+ *  ========================= */
+exports.reporteCompra = async (req, res) => {
   const idPedido = req.query.id;
-
   if (!idPedido) {
     return res.status(400).send('Falta el ID del pedido');
   }
 
   const sql = `
-SELECT 
-  p.ID_Pedido, p.Fecha_Pedido, p.Total,
-  u.Nombre, u.Correo_Electronico, u.Dirección, u.Teléfono,
-  dp.Cantidad, IFNULL(dp.Precio, 0) AS PrecioUnitario,
-  pr.Nombre AS NombreProducto,
-  pa.monto, pa.fecha_pago, pa.estado_pago,
-  mp.nombre_metodo AS Metodo_Pago
-FROM pedido p
-JOIN usuario u ON p.ID_Usuario = u.ID_Usuario
-JOIN detalle_pedido dp ON p.ID_Pedido = dp.ID_Pedido
-JOIN producto pr ON dp.ID_Producto = pr.ID_Producto
-LEFT JOIN pago pa ON p.ID_Pedido = pa.pedido_ID_Pedido
-LEFT JOIN metodo_pago mp ON pa.metodo_pago_ID_metodo_pago = mp.ID_metodo_pago
-WHERE p.ID_Pedido = ?
+    SELECT 
+      p.id_pedido,
+      p.fecha_pedido AS fecha,
+      p.total,
+      u.nombre,
+      u.correo_electronico AS email,
+      u.direccion,
+      u.telefono,
+      dp.cantidad,
+      dp.precio AS precio_unitario,
+      pr.nombre AS nombre_producto,
+      pa.monto,
+      pa.fecha_pago,
+      pa.estado_pago,
+      mp.nombre_metodo AS metodo_pago
+    FROM pedido p
+    JOIN usuario u           ON p.id_usuario = u.id_usuario
+    JOIN detalle_pedido dp   ON p.id_pedido = dp.id_pedido
+    JOIN producto pr         ON dp.id_producto = pr.id_producto
+    LEFT JOIN pago pa        ON p.id_pedido = pa.pedido_id_pedido
+    LEFT JOIN metodo_pago mp ON pa.metodo_pago_id_metodo_pago = mp.id_metodo_pago
+    WHERE p.id_pedido = $1
   `;
 
-  db.query(sql, [idPedido], (err, resultados) => {
-    if (err) {
-      console.error('Error en consulta reporte compra:', err);
-      return res.status(500).send('Error al obtener el reporte de compra');
-    }
-
-    if (resultados.length === 0) {
+  try {
+    const { rows } = await pool.query(sql, [idPedido]);
+    if (rows.length === 0) {
       return res.status(404).send('Pedido no encontrado');
     }
 
-    // Datos del pedido
+    // Construir objeto pedido (tomamos los datos del primer row)
+    const first = rows[0];
     const pedido = {
-      ID_Pedido: resultados[0].ID_Pedido,
-      Fecha_Pedido: resultados[0].Fecha_Pedido,
-      Total: parseFloat(resultados[0].Total) || 0,
-      monto: resultados[0].monto || null,
-      Fecha_Pago: resultados[0].fecha_pago || null,
-      estado_pago: resultados[0].estado_pago || null,
-      metodo_pago: resultados[0].Metodo_Pago || null,
+      id_pedido:    first.id_pedido,
+      fecha:        first.fecha,
+      total:        Number(first.total) || 0,
+      monto:        first.monto != null ? Number(first.monto) : null,
+      fecha_pago:   first.fecha_pago,
+      estado_pago:  first.estado_pago,
+      metodo_pago:  first.metodo_pago
     };
 
-    // Datos del usuario
+    // Construir objeto usuario
     const usuario = {
-      Nombre: resultados[0].Nombre,
-      Correo_Electronico: resultados[0].Correo_Electronico,
-      Dirección: resultados[0].Dirección,
-      Teléfono: resultados[0].Teléfono
+      nombre:       first.nombre,
+      email:        first.email,
+      direccion:    first.direccion,
+      telefono:     first.telefono
     };
 
-    // Detalles del pedido
-    const detalles = resultados.map(row => ({
-      NombreProducto: row.NombreProducto,
-      Cantidad: parseInt(row.Cantidad) || 0,
-      PrecioUnitario: parseFloat(row.PrecioUnitario) || 0
+    // Construir array de detalles
+    const detalles = rows.map(r => ({
+      nombre_producto:  r.nombre_producto,
+      cantidad:         parseInt(r.cantidad, 10) || 0,
+      precio_unitario:  Number(r.precio_unitario) || 0
     }));
 
-    // Renderizamos la vista con los datos
+    // Renderizar la vista con los datos
     res.render('reporte-compra', { pedido, usuario, detalles });
-  });
+  } catch (err) {
+    console.error('❌ Error en consulta reporte compra:', err);
+    res.status(500).send('Error al obtener el reporte de compra');
+  }
 };

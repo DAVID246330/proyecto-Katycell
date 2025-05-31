@@ -1,110 +1,84 @@
-html {
-    --s: 50px; /* control the size */
-    --c1: #87bdb1;
-    --c2: #d3e2b6;
-    --c: #0000 75%, var(--c1) 0;
-    --g1: conic-gradient(at calc(200% / 3) 10%, var(--c));
-    --g2: conic-gradient(at 10% calc(200% / 3), var(--c));
-    background:
-        var(--g1), var(--g2),
-        var(--g1) var(--s) var(--s),
-        var(--g2) var(--s) var(--s),
-        var(--g1) calc(2 * var(--s)) calc(2 * var(--s)),
-        var(--g2) calc(2 * var(--s)) calc(2 * var(--s)) var(--c2);
-    background-size: calc(3 * var(--s)) calc(3 * var(--s));
-}
-
 body {
     margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #f1f1f1, #e0e0e0);
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100svh;
-    font-size: larger;
-}
+    height: 100vh;
+  }
 
-.form-container {
-    width: 500px;
-    background-color: white;
+  .form-container {
+    background-color: #fff;
+    padding: 2em 3em;
     border-radius: 10px;
-    padding: 50px;
-}
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+  }
 
-form {
+  .form-container h1 {
+    margin-bottom: 0.3em;
+    color: #222;
+  }
+
+  .form-container p {
+    color: #666;
+    font-size: 0.95em;
+  }
+
+  .form-container .error {
+    color: #c62828;
+    font-weight: bold;
+    margin: 1em 0;
+  }
+
+  form {
+    margin-top: 1.5em;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-}
+    gap: 1.2em;
+  }
 
-form + p, form p {
-    text-align: center;
-}
-
-input, select, button {
-    border-radius: 4px;
-    border: unset;
-    padding: 15px 30px;
-    font-size: larger;
-}
-
-/* Estilo para el campo select */
-select {
-    background-color: #f9f9f9;
+  label {
+    text-align: left;
+    font-weight: bold;
     color: #333;
+  }
+
+  input {
+    padding: 0.8em;
     border: 1px solid #ccc;
     border-radius: 5px;
-    padding: 10px;
-    font-size: 16px;
-    appearance: none; /* Elimina el estilo predeterminado del navegador */
-    -webkit-appearance: none; /* Elimina el estilo en Safari */
-    -moz-appearance: none; /* Elimina el estilo en Firefox */
-    cursor: pointer;
-    transition: border-color 0.3s ease;
-}
+    font-size: 1em;
+  }
 
-/* Estilo para el select cuando está en foco */
-select:focus {
-    border-color: #3498db;
-    outline: none;
-}
-
-button {
-    background-color: #1149b1;
+  button {
+    padding: 0.8em;
+    background-color: #0288d1;
     color: white;
-    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
     cursor: pointer;
-}
+    transition: background-color 0.3s ease;
+  }
 
-button:hover {
-    background-color: #0d38a4;
-}
+  button:hover {
+    background-color: #0277bd;
+  }
 
-/* Estilo de los mensajes de error */
-.Error {
-    color: rgb(224, 7, 7);
-}
-
-.escondido {
-    display: none;
-}
-
-/* Estilo para los enlaces */
-a {
-    color: #3498db;
+  .form-container a {
+    color: #0288d1;
     text-decoration: none;
-}
+  }
 
-a:hover {
+  .form-container a:hover {
     text-decoration: underline;
-}
+  }
 
-/* Estilo de elementos que no son visibles pero accesibles */
-.sr-only {
-    position: absolute;
-    left: 10000px;
-    top: auto;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-}
+  .link-group {
+    margin-top: 1em;
+    font-size: 0.9em;
+  }

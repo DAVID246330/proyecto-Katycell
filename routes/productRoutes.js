@@ -16,16 +16,16 @@ const reporteController = require('../controllers/reporteController');
 // ==========================
 
 // 🆕 Agregar un nuevo producto (incluye subida de imagen)
-router.post('/productos/agregar', upload.single('Imagen'), productosController.agregarProducto);
+router.post('/productos/agregar', upload.single('imagen'), productosController.agregarProducto);
 
 // 🛠️ Vista de administración de productos (requiere sesión activa)
-router.get('/admin', verificarSesion, sessionMensaje, productosController.mostrarProductosAdmin);
+router.get('/admin', /*verificarSesion,*/ sessionMensaje, productosController.mostrarProductosAdmin);
 
 // 🏠 Mostrar productos en la página principal
 router.get('/home', sessionMensaje, productosController.mostrarProductosHome);
 
 // ❌ Eliminar producto por ID
-router.post('/productos/eliminar/:ID_Producto', productosController.eliminarProducto);
+router.post('/productos/eliminar/:id_producto', productosController.eliminarProducto);
 
 // ==========================
 // 🛒 RUTAS DEL CARRITO

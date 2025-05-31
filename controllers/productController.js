@@ -1,307 +1,228 @@
-const db = require('../models/db'); // Importar conexión a la base de datos
+const pool = require('../models/db'); // tu pool de pg
+const bcryptjs = require('bcryptjs');
 
 /** =========================
  *  AGREGAR PRODUCTO
  *  ========================= */
-exports.agregarProducto = (req, res) => {
-    const {
-        Nombre,
-        Descripcion,
-        Precio,
-        Precio_Descuento,
-        Stock,
-        ID_Categoria
-    } = req.body;
+exports.agregarProducto = async (req, res) => {
+  const {
+    nombre,
+    descripcion,
+    precio,
+    precio_descuento,
+    stock,
+    id_categoria
+  } = req.body;
 
-    // Validar imagen
-    if (!req.file) {
-        return res.status(400).send('Por favor, sube una imagen.');
+  // Validar imagen
+  if (!req.file) {
+    return res.status(400).send('Por favor, sube una imagen.');
+  }
+  const imagen = "/img/" + req.file.filename;
+
+  try {
+    // 1. Verificar si existe
+    const { rows: existentes } = await pool.query(
+      'SELECT * FROM producto WHERE nombre = $1',
+      [nombre]
+    );
+
+    if (existentes.length > 0) {
+      // Actualizar stock
+      const nuevoStock = existentes[0].stock + parseInt(stock, 10);
+      await pool.query(
+        'UPDATE producto SET stock = $1 WHERE id_producto = $2',
+        [nuevoStock, existentes[0].id_producto]
+      );
+      console.log('✅ Stock actualizado correctamente');
+      return res.redirect('/admin');
     }
 
-    const Imagen = "/img/" + req.file.filename;
+    // 2. Insertar nuevo producto
+    await pool.query(
+      `INSERT INTO producto
+        (nombre, descripcion, precio, precio_descuento, stock, imagen, id_categoria)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [nombre, descripcion, precio, precio_descuento, stock, imagen, id_categoria]
+    );
+    console.log('✅ Producto insertado correctamente');
+    res.redirect('/admin');
 
-    //  verificamos si ya existe un producto con ese nombre
-    const buscarSQL = 'SELECT * FROM producto WHERE Nombre = ?';
-    db.query(buscarSQL, [Nombre], (err, resultados) => {
-        if (err) {
-            console.error('❌ Error al buscar el producto:', err);
-            return res.status(500).send('Error al verificar el producto');
-        }
-
-        if (resultados.length > 0) {
-            // Producto ya existe, actualizamos solo el stock
-            const productoExistente = resultados[0];
-            const nuevoStock = productoExistente.Stock + parseInt(Stock);
-
-            const actualizarSQL = 'UPDATE producto SET Stock = ? WHERE ID_Producto = ?';
-            db.query(actualizarSQL, [nuevoStock, productoExistente.ID_Producto], (err, resultado) => {
-                if (err) {
-                    console.error('❌ Error al actualizar el stock:', err);
-                    return res.status(500).send('Error al actualizar el stock');
-                }
-
-                console.log('✅ Stock actualizado correctamente');
-                return res.redirect('/admin');
-            });
-
-        } else {
-            // Producto no existe, se inserta nuevo
-            const nuevoProducto = {
-                Nombre,
-                Descripcion,
-                Precio,
-                Precio_Descuento,
-                Stock,
-                Imagen,
-                ID_Categoria
-            };
-
-            const insertarSQL = 'INSERT INTO producto SET ?';
-            db.query(insertarSQL, nuevoProducto, (err, resultado) => {
-                if (err) {
-                    console.error('❌ Error al insertar producto:', err);
-                    return res.status(500).send('Error al agregar el producto');
-                }
-
-                console.log('✅ Producto insertado correctamente');
-                res.redirect('/admin');
-            });
-        }
-    });
+  } catch (err) {
+    console.error('❌ Error en agregarProducto:', err);
+    res.status(500).send('Error al procesar el producto');
+  }
 };
 
 /** =========================
  *  MOSTRAR PRODUCTOS EN /admin 
  *  ========================= */
-exports.mostrarProductosAdmin = (req, res) => {
-    const buscar = req.query.buscar || '';
-    let query = "SELECT * FROM Producto";
-    let valores = [];
+exports.mostrarProductosAdmin = async (req, res) => {
+  const buscar = req.query.buscar || '';
+  let query = 'SELECT * FROM producto';
+  const valores = [];
 
-    if (buscar) {
-        query += " WHERE Nombre LIKE ?";
-        valores.push(`%${buscar}%`);
-    }
+  if (buscar) {
+    query += ' WHERE nombre ILIKE $1';
+    valores.push(`%${buscar}%`);
+  }
 
-    const categoriasQuery = "SELECT * FROM categoria";
-
-    db.query(query, valores, (err, productos) => {
-        if (err) {
-            console.error('❌ Error al obtener productos:', err);
-            return res.status(500).send('Error al cargar los productos');
-        }
-
-        db.query(categoriasQuery, (err, categorias) => {
-            if (err) {
-                console.error('❌ Error al obtener categorías:', err);
-                return res.status(500).send('Error al cargar las categorías');
-            }
-
-            res.render('admin', {
-                title: 'Administración - Katicell',
-                productos,
-                categorias,
-                buscar
-            });
-        });
+  try {
+    const { rows: productos } = await pool.query(query, valores);
+    const { rows: categorias } = await pool.query('SELECT * FROM categoria');
+    res.render('admin', {
+      title: 'Administración - Katicell',
+      productos,
+      categorias,
+      buscar
     });
+  } catch (err) {
+    console.error('❌ Error en mostrarProductosAdmin:', err);
+    res.status(500).send('Error al cargar los productos');
+  }
 };
 
 /** =========================
  *  ELIMINAR PRODUCTO EN ADMIN
  *  ========================= */
-exports.eliminarProducto = (req, res) => {
-    const id = req.params.ID_Producto;
-    const query = 'DELETE FROM Producto WHERE ID_Producto = ?';
-
-    db.query(query, [id], (err, result) => {
-        if (err) {
-            console.error('Error al eliminar producto:', err);
-            return res.status(500).send('Error al eliminar el producto');
-        }
-
-        console.log(`✅ Producto con ID ${id} eliminado correctamente`);
-        res.redirect('/admin');
-    });
+exports.eliminarProducto = async (req, res) => {
+  const id = req.params.id_producto;
+  try {
+    await pool.query('DELETE FROM producto WHERE id_producto = $1', [id]);
+    console.log(`✅ Producto con ID ${id} eliminado correctamente`);
+    res.redirect('/admin');
+  } catch (err) {
+    console.error('❌ Error en eliminarProducto:', err);
+    res.status(500).send('Error al eliminar el producto');
+  }
 };
 
 /** =========================
  *  DETALLE DE PRODUCTO POR ID
  *  ========================= */
 exports.detalleProductoVista = async (req, res) => {
-    const id = req.params.id;
-
-    try {
-        const query = `
-            SELECT 
-                ID_Producto, 
-                Nombre, 
-                Descripcion, 
-                Precio, 
-                Precio_Descuento, 
-                Imagen, 
-                Stock 
-            FROM Producto 
-            WHERE ID_Producto = ?`;
-
-            const producto = await new Promise((resolve, reject) => {
-                db.query(query, [id], (err, results) => {
-                    if (err) return reject(err);
-                    if (results.length === 0) return reject("Producto no encontrado");
-                    resolve(results[0]);
-            });
-        });
-
-        res.render("detalle-prod", { producto });
-
-    } catch (error) {
-        console.error("❌ Error al obtener producto:", error);
-        res.status(500).send("Producto no disponible");
-
-    }
+  const id = req.params.id;
+  try {
+    const { rows } = await pool.query(
+      `SELECT id_producto, nombre, descripcion, precio, precio_descuento, imagen, stock
+       FROM producto
+       WHERE id_producto = $1`,
+      [id]
+    );
+    if (rows.length === 0) throw new Error('Producto no encontrado');
+    res.render('detalle-prod', { producto: rows[0] });
+  } catch (err) {
+    console.error('❌ Error en detalleProductoVista:', err);
+    res.status(500).send('Producto no disponible');
+  }
 };
 
 /** =========================
  *  MOSTRAR PRODUCTOS EN LA PÁGINA DE INICIO
  *  ========================= */
-exports.mostrarProductosHome = (req, res) => {
-    const buscar = req.query.buscar || "";
-    const categoriaSeleccionada = req.query.categoria || "";
-    const pagina = parseInt(req.query.page) || 1;
-    const productosPorPagina = 9;
-    const offset = (pagina - 1) * productosPorPagina;
-    const valores = [];
+exports.mostrarProductosHome = async (req, res) => {
+  const buscar = req.query.buscar || '';
+  const categoria = req.query.categoria || '';
+  const pagina = parseInt(req.query.page, 10) || 1;
+  const porPagina = 9;
+  const offset = (pagina - 1) * porPagina;
 
-    let baseQuery = `
-        FROM Producto 
-        JOIN Categoria ON Producto.ID_Categoria = Categoria.ID_Categoria
-    `;
+  const condiciones = [];
+  const valores = [];
 
-    const condiciones = [];
-
-    if (buscar.trim() !== "") {
-        condiciones.push("Producto.Nombre LIKE ?");
-        valores.push(`%${buscar}%`);
-    }
-
-    if (categoriaSeleccionada) {
-        condiciones.push("Producto.ID_Categoria = ?");
-        valores.push(categoriaSeleccionada);
-    }
-
-    // Armamos condiciones si hay filtros
-    const whereClause = condiciones.length > 0 ? `WHERE ${condiciones.join(" AND ")}` : "";
-
-    const queryProductos = `
-        SELECT Producto.*, Categoria.Nombre_Categoria 
-        ${baseQuery} 
-        ${whereClause}
-        ORDER BY Producto.ID_Producto DESC 
-        LIMIT ? OFFSET ?
-    `;
-
-    const queryTotal = `
-        SELECT COUNT(*) AS total 
-        ${baseQuery} 
-        ${whereClause}
-    `;
-
-    exports.reporteCompra = (req, res) => {
-  const idPedido = req.query.id;
-
-  if (!idPedido) {
-    return res.status(400).send('Falta el ID del pedido');
+  if (buscar) {
+    condiciones.push(`p.nombre ILIKE $${valores.length + 1}`);
+    valores.push(`%${buscar}%`);
   }
+  if (categoria) {
+    condiciones.push(`p.id_categoria = $${valores.length + 1}`);
+    valores.push(categoria);
+  }
+  const where = condiciones.length ? `WHERE ${condiciones.join(' AND ')}` : '';
 
-  // Consulta principal: obtener datos del pedido, usuario y detalles
+  const totalQuery = `
+    SELECT COUNT(*) AS total
+    FROM producto p
+    ${where}
+  `;
+  const dataQuery = `
+    SELECT p.*, c.nombre_categoria
+    FROM producto p
+    JOIN categoria c ON p.id_categoria = c.id_categoria
+    ${where}
+    ORDER BY p.id_producto DESC
+    LIMIT $${valores.length + 1} OFFSET $${valores.length + 2}
+  `;
+  valores.push(porPagina, offset);
+
+  try {
+    const totalRes = await pool.query(totalQuery, valores.slice(0, valores.length - 2));
+    const total = parseInt(totalRes.rows[0].total, 10);
+    const paginas = Math.ceil(total / porPagina);
+
+    const prodRes = await pool.query(dataQuery, valores);
+    const catRes = await pool.query('SELECT * FROM categoria');
+
+    res.render('home', {
+      title: 'Katicell | Inicio',
+      productos: prodRes.rows,
+      categorias: catRes.rows,
+      buscar,
+      categoriaSeleccionada: categoria,
+      usuario: req.session.usuario || null,
+      pagina,
+      totalPaginas: paginas
+    });
+  } catch (err) {
+    console.error('❌ Error en mostrarProductosHome:', err);
+    res.status(500).send('Error al cargar la página de inicio');
+  }
+};
+
+/** =========================
+ *  REPORTE DE COMPRA
+ *  ========================= */
+exports.reporteCompra = async (req, res) => {
+  const idPedido = req.query.id;
+  if (!idPedido) return res.status(400).send('Falta el ID del pedido');
+
   const sql = `
     SELECT 
-      p.ID_Pedido, p.Fecha, p.Total,
-      u.Nombre, u.Email, u.Direccion, u.Telefono, u.MetodoPago,
-      dp.Cantidad, dp.PrecioUnitario,
-      pr.Nombre AS NombreProducto
+      p.id_pedido, p.fecha_pedido AS fecha, p.total,
+      u.nombre, u.correo_electronico AS email, u.direccion, u.telefono,
+      dp.cantidad, dp.precio,
+      pr.nombre AS nombre_producto
     FROM pedido p
-    JOIN usuario u ON p.ID_Usuario = u.ID_Usuario
-    JOIN detalle_pedido dp ON p.ID_Pedido = dp.ID_Pedido
-    JOIN producto pr ON dp.ID_Producto = pr.ID_Producto
-    WHERE p.ID_Pedido = ?
+    JOIN usuario u ON p.id_usuario = u.id_usuario
+    JOIN detalle_pedido dp ON p.id_pedido = dp.id_pedido
+    JOIN producto pr ON dp.id_producto = pr.id_producto
+    WHERE p.id_pedido = $1
   `;
 
-  db.query(sql, [idPedido], (err, resultados) => {
-    if (err) {
-      console.error('Error en consulta reporte compra:', err);
-      return res.status(500).send('Error al obtener el reporte de compra');
-    }
+  try {
+    const { rows } = await pool.query(sql, [idPedido]);
+    if (rows.length === 0) return res.status(404).send('Pedido no encontrado');
 
-    if (resultados.length === 0) {
-      return res.status(404).send('Pedido no encontrado');
-    }
-
-    // Extraemos datos generales del pedido y usuario del primer registro
     const pedido = {
-      ID_Pedido: resultados[0].ID_Pedido,
-      Fecha: resultados[0].Fecha,
-      Total: resultados[0].Total,
+      id_pedido: rows[0].id_pedido,
+      fecha: rows[0].fecha,
+      total: rows[0].total
     };
-
     const usuario = {
-      Nombre: resultados[0].Nombre,
-      Email: resultados[0].Email,
-      Direccion: resultados[0].Direccion,
-      Telefono: resultados[0].Telefono,
-      MetodoPago: resultados[0].MetodoPago,
+      nombre: rows[0].nombre,
+      email: rows[0].email,
+      direccion: rows[0].direccion,
+      telefono: rows[0].telefono
     };
-
-    // Construimos el array de detalles
-    const detalles = resultados.map(row => ({
-      NombreProducto: row.NombreProducto,
-      Cantidad: row.Cantidad,
-      PrecioUnitario: row.PrecioUnitario,
+    const detalles = rows.map(r => ({
+      nombre_producto: r.nombre_producto,
+      cantidad: r.cantidad,
+      precio_unitario: r.precio
     }));
 
     res.render('reporte-compra', { pedido, usuario, detalles });
-  });
-};
-
-    // Agregamos LIMIT y OFFSET al final de los valores
-    const valoresProductos = [...valores, productosPorPagina, offset];
-
-    const categoriasQuery = "SELECT * FROM Categoria";
-
-
-    db.query(queryTotal, valores, (err, totalResult) => {
-        if (err) {
-            console.error('❌ Error al contar productos:', err.message);
-            return res.status(500).send('Error al contar los productos');
-        }
-
-        const totalProductos = totalResult[0].total;
-        const totalPaginas = Math.ceil(totalProductos / productosPorPagina);
-
-        db.query(queryProductos, valoresProductos, (err, productos) => {
-            if (err) {
-                console.error('❌ Error al obtener productos para home:', err.message);
-                return res.status(500).send('Error al cargar los productos');
-            }
-
-
-            db.query(categoriasQuery, (err, categorias) => {
-                if (err) {
-                    console.error('❌ Error al obtener categorías:', err.message);
-                    return res.status(500).send('Error al cargar las categorías');
-                }
-
-                res.render('home', {
-                    title: 'Katicell | Inicio',
-                    productos,
-                    categorias,
-                    buscar,
-                    categoriaSeleccionada,
-                    usuario: req.session.usuario || null,
-                    pagina,
-                    totalPaginas
-                });
-            });
-        });
-    });
+  } catch (err) {
+    console.error('❌ Error en reporteCompra:', err);
+    res.status(500).send('Error al obtener el reporte de compra');
+  }
 };
