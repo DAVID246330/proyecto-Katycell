@@ -18,17 +18,19 @@ exports.agregarProducto = async (req, res) => {
   if (!req.file) {
     return res.status(400).send('Por favor, sube una imagen.');
   }
-  const imagen = "/img/" + req.file.filename;
+
+  // ✅ Usar la URL pública de Cloudinary
+  const imagen = req.file.path;
 
   try {
-    // 1. Verificar si existe
+    // 1. Verificar si existe el producto
     const { rows: existentes } = await pool.query(
       'SELECT * FROM producto WHERE nombre = $1',
       [nombre]
     );
 
     if (existentes.length > 0) {
-      // Actualizar stock
+      // Actualizar stock si ya existe
       const nuevoStock = existentes[0].stock + parseInt(stock, 10);
       await pool.query(
         'UPDATE producto SET stock = $1 WHERE id_producto = $2',
@@ -53,7 +55,6 @@ exports.agregarProducto = async (req, res) => {
     res.status(500).send('Error al procesar el producto');
   }
 };
-
 /** =========================
  *  MOSTRAR PRODUCTOS EN /admin 
  *  ========================= */
